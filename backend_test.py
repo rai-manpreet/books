@@ -33,6 +33,7 @@ class BookManagementTester:
         self.test_book_id = None
         self.test_book_id2 = None  # For additional testing
         self.test_category_id = None
+        self.timestamp = str(int(time.time()))  # Add timestamp as instance variable
         self.results = {
             "auth_tests": [],
             "book_upload_tests": [],
