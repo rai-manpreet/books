@@ -164,6 +164,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "Reading progress tracking working flawlessly. Progress updates (✅), progress persistence (✅), progress retrieval (✅). Tested with 35% progress value and verified correct storage and retrieval. All endpoints properly secured and functional."
+      - working: true
+        agent: "testing"
+        comment: "Enhanced progress tracking with reading time fully functional. ✅ Enhanced progress update (65% progress with 30 minutes reading time), ✅ Reading time tracking (30 minutes tracked correctly). Reading time accumulation working properly with progress updates."
         
   - task: "Search Functionality"
     implemented: true
