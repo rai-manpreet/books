@@ -287,7 +287,7 @@ startxref
         
         headers = {"Authorization": f"Bearer {self.test_user_token}"}
         
-        # Test valid PDF upload
+        # Test valid PDF upload with categories and tags
         pdf_content = self.create_test_pdf()
         
         try:
@@ -296,7 +296,9 @@ startxref
             }
             data = {
                 'title': 'The Art of Programming',
-                'author': 'Jane Developer'
+                'author': 'Jane Developer',
+                'category': 'Programming',
+                'tags': 'python,coding,tutorial'
             }
             
             response = self.session.post(f"{self.base_url}/books/upload", 
@@ -304,20 +306,49 @@ startxref
             
             if response.status_code == 200:
                 book_data = response.json()
-                if "id" in book_data and "title" in book_data:
+                if ("id" in book_data and "title" in book_data and 
+                    book_data.get("category") == "Programming" and
+                    "python" in book_data.get("tags", [])):
                     self.test_book_id = book_data["id"]
-                    self.log_test("book_upload_tests", "Valid PDF Upload", True, 
-                                "PDF uploaded successfully")
+                    self.log_test("book_upload_tests", "Enhanced PDF Upload", True, 
+                                "PDF uploaded successfully with category and tags")
                 else:
-                    self.log_test("book_upload_tests", "Valid PDF Upload", False, 
-                                "Upload response missing required fields")
+                    self.log_test("book_upload_tests", "Enhanced PDF Upload", False, 
+                                "Upload response missing category/tags data")
             else:
-                self.log_test("book_upload_tests", "Valid PDF Upload", False, 
+                self.log_test("book_upload_tests", "Enhanced PDF Upload", False, 
                             f"PDF upload failed with status {response.status_code}", 
                             {"response": response.text})
         except Exception as e:
-            self.log_test("book_upload_tests", "Valid PDF Upload", False, 
+            self.log_test("book_upload_tests", "Enhanced PDF Upload", False, 
                         f"Upload request failed: {str(e)}")
+        
+        # Upload second book for search testing
+        try:
+            files = {
+                'file': ('advanced_algorithms.pdf', pdf_content, 'application/pdf')
+            }
+            data = {
+                'title': 'Advanced Algorithms',
+                'author': 'Dr. Computer Science',
+                'category': 'Computer Science',
+                'tags': 'algorithms,data-structures'
+            }
+            
+            response = self.session.post(f"{self.base_url}/books/upload", 
+                                       files=files, data=data, headers=headers)
+            
+            if response.status_code == 200:
+                book_data = response.json()
+                self.test_book_id2 = book_data["id"]
+                self.log_test("book_upload_tests", "Second Book Upload", True, 
+                            "Second book uploaded for search testing")
+            else:
+                self.log_test("book_upload_tests", "Second Book Upload", False, 
+                            f"Second book upload failed with status {response.status_code}")
+        except Exception as e:
+            self.log_test("book_upload_tests", "Second Book Upload", False, 
+                        f"Second upload request failed: {str(e)}")
         
         # Test invalid file type upload
         try:
