@@ -584,6 +584,8 @@ const ReadingStats = ({ stats }) => {
     </div>
   );
 };
+
+const PDFReader = ({ book, onClose, onProgressUpdate }) => {
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [pdfUrl, setPdfUrl] = useState(null);
