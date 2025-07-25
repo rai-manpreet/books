@@ -252,7 +252,7 @@ startxref
                 response = self.session.get(f"{self.base_url}/auth/me", headers=headers)
                 if response.status_code == 200:
                     data = response.json()
-                    if "email" in data and data["email"] == "alice.reader@bookstore.com":
+                    if "email" in data and f"alice.reader.{self.timestamp}@bookstore.com" in data["email"]:
                         self.log_test("auth_tests", "Valid Token Access", True, 
                                     "Successfully accessed protected endpoint with valid token")
                     else:
