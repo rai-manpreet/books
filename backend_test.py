@@ -1027,7 +1027,11 @@ startxref
         self.test_protected_endpoint_access()
         self.test_book_upload()
         self.test_book_management()
-        self.test_reading_progress()
+        self.test_search_functionality()
+        self.test_categories_system()
+        self.test_enhanced_progress_tracking()
+        self.test_bookmarks_system()
+        self.test_reading_statistics()
         self.test_user_isolation()
         self.test_book_deletion()
         
