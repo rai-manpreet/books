@@ -189,7 +189,7 @@ startxref
         
         # Test valid login
         login_data = {
-            "email": "alice.reader@bookstore.com",
+            "email": f"alice.reader.{self.timestamp}@bookstore.com",
             "password": "SecurePass123!"
         }
         
