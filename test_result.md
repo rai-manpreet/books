@@ -306,12 +306,15 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Authentication UI"
-    - "Book Upload Interface" 
-    - "Book Library Display"
-    - "PDF Reader"
+    - "Search Functionality"
+    - "Categories System"
+    - "Bookmarks System"
+    - "Reading Statistics"
+    - "Search and Filter UI"
+    - "Reading Statistics Dashboard"
+    - "Enhanced Book Cards"
   stuck_tasks: []
-  test_all: false
+  test_all: true
   test_priority: "high_first"
 
 agent_communication:
