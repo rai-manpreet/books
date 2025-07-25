@@ -36,7 +36,11 @@ class BookManagementTester:
             "book_upload_tests": [],
             "book_management_tests": [],
             "progress_tracking_tests": [],
-            "user_isolation_tests": []
+            "user_isolation_tests": [],
+            "search_tests": [],
+            "category_tests": [],
+            "bookmark_tests": [],
+            "stats_tests": []
         }
     
     def log_test(self, category, test_name, success, message, details=None):
