@@ -164,7 +164,7 @@ startxref
         
         # Register second user for isolation testing
         user2_data = {
-            "email": f"bob.writer.{timestamp}@bookstore.com",
+            "email": f"bob.writer.{self.timestamp}@bookstore.com",
             "password": "AnotherPass456!",
             "name": "Bob Writer"
         }
