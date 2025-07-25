@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Build a comprehensive Books Management System with user authentication, book upload (PDF, EPUB), secure file storage, PDF reading capabilities, and reading progress tracking."
+user_problem_statement: "Build a comprehensive Books Management System with user authentication, book upload (PDF, EPUB), secure file storage, PDF reading capabilities, reading progress tracking, search functionality, categories system, bookmarks, and reading statistics dashboard."
 
 backend:
   - task: "User Authentication System"
