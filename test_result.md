@@ -321,10 +321,6 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Search Functionality"
-    - "Categories System"
-    - "Bookmarks System"
-    - "Reading Statistics"
     - "Search and Filter UI"
     - "Reading Statistics Dashboard"
     - "Enhanced Book Cards"
