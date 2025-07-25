@@ -741,14 +741,22 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [selectedBook, setSelectedBook] = useState(null);
   const [showUpload, setShowUpload] = useState(false);
+  const [stats, setStats] = useState(null);
+  const [searchParams, setSearchParams] = useState({});
 
   useEffect(() => {
     fetchBooks();
+    fetchStats();
   }, []);
 
-  const fetchBooks = async () => {
+  const fetchBooks = async (search = '', filters = {}) => {
     try {
-      const response = await axios.get(`${API}/books`);
+      const params = new URLSearchParams();
+      if (search) params.append('search', search);
+      if (filters.category) params.append('category', filters.category);
+      if (filters.tags) params.append('tags', filters.tags);
+      
+      const response = await axios.get(`${API}/books?${params.toString()}`);
       setBooks(response.data);
     } catch (error) {
       console.error('Failed to fetch books:', error);
@@ -757,9 +765,29 @@ const Dashboard = () => {
     }
   };
 
+  const fetchStats = async () => {
+    try {
+      const response = await axios.get(`${API}/stats`);
+      setStats(response.data);
+    } catch (error) {
+      console.error('Failed to fetch stats:', error);
+    }
+  };
+
+  const handleSearch = (searchTerm) => {
+    setSearchParams({ ...searchParams, search: searchTerm });
+    fetchBooks(searchTerm, searchParams);
+  };
+
+  const handleFilter = (filters) => {
+    setSearchParams({ ...searchParams, ...filters });
+    fetchBooks(searchParams.search || '', { ...searchParams, ...filters });
+  };
+
   const handleUpload = (newBook) => {
-    setBooks([...books, newBook]);
+    setBooks([newBook, ...books]);
     setShowUpload(false);
+    fetchStats(); // Refresh stats
   };
 
   const handleRead = (book) => {
@@ -771,9 +799,24 @@ const Dashboard = () => {
       try {
         await axios.delete(`${API}/books/${bookId}`);
         setBooks(books.filter(book => book.id !== bookId));
+        fetchStats(); // Refresh stats
       } catch (error) {
         console.error('Failed to delete book:', error);
       }
+    }
+  };
+
+  const handleBookmark = async (bookId, pageNumber) => {
+    try {
+      await axios.post(`${API}/books/${bookId}/bookmark`, {
+        book_id: bookId,
+        page_number: pageNumber
+      });
+      
+      // Refresh books to show updated bookmarks
+      fetchBooks(searchParams.search || '', searchParams);
+    } catch (error) {
+      console.error('Failed to toggle bookmark:', error);
     }
   };
 
@@ -781,12 +824,18 @@ const Dashboard = () => {
     try {
       await axios.put(`${API}/books/${bookId}/progress`, {
         book_id: bookId,
-        progress: progress
+        progress: progress,
+        reading_time: 1 // Add 1 minute of reading time
       });
       
       setBooks(books.map(book => 
         book.id === bookId ? { ...book, reading_progress: progress } : book
       ));
+      
+      // Refresh stats if book is completed
+      if (progress >= 0.95) {
+        fetchStats();
+      }
     } catch (error) {
       console.error('Failed to update progress:', error);
     }
@@ -797,7 +846,10 @@ const Dashboard = () => {
       <div className="min-h-screen bg-gray-100">
         <Navbar />
         <div className="container mx-auto px-4 py-8">
-          <div className="text-center">Loading your library...</div>
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading your library...</p>
+          </div>
         </div>
       </div>
     );
@@ -811,11 +863,18 @@ const Dashboard = () => {
           <h2 className="text-3xl font-bold">My Library</h2>
           <button
             onClick={() => setShowUpload(!showUpload)}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
           >
             {showUpload ? 'Cancel' : 'Upload Book'}
           </button>
         </div>
+
+        <ReadingStats stats={stats} />
+
+        <SearchAndFilter 
+          onSearch={handleSearch}
+          onFilter={handleFilter}
+        />
 
         {showUpload && (
           <div className="mb-8">
@@ -825,8 +884,16 @@ const Dashboard = () => {
 
         {books.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-600 text-lg">Your library is empty</p>
-            <p className="text-gray-500">Upload your first book to get started!</p>
+            <p className="text-gray-600 text-lg">
+              {searchParams.search || searchParams.category || searchParams.tags 
+                ? 'No books found matching your criteria' 
+                : 'Your library is empty'}
+            </p>
+            <p className="text-gray-500">
+              {searchParams.search || searchParams.category || searchParams.tags 
+                ? 'Try adjusting your search or filters' 
+                : 'Upload your first book to get started!'}
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -836,6 +903,7 @@ const Dashboard = () => {
                 book={book}
                 onRead={handleRead}
                 onDelete={handleDelete}
+                onBookmark={handleBookmark}
               />
             ))}
           </div>
