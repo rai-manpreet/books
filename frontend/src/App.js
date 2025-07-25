@@ -451,7 +451,139 @@ const BookCard = ({ book, onRead, onDelete, onBookmark }) => {
   );
 };
 
-const PDFReader = ({ book, onClose, onProgressUpdate }) => {
+const SearchAndFilter = ({ onSearch, onFilter }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedTags, setSelectedTags] = useState('');
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get(`${API}/categories`);
+      setCategories(response.data);
+    } catch (error) {
+      console.error('Failed to fetch categories:', error);
+    }
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    onSearch(searchTerm);
+  };
+
+  const handleFilter = () => {
+    onFilter({
+      category: selectedCategory,
+      tags: selectedTags
+    });
+  };
+
+  return (
+    <div className="bg-white p-4 rounded-lg shadow-md mb-6">
+      <div className="flex flex-wrap gap-4 items-end">
+        <div className="flex-1 min-w-64">
+          <form onSubmit={handleSearch} className="flex">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search books by title, author, or filename..."
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            />
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-600 text-white rounded-r-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              Search
+            </button>
+          </form>
+        </div>
+        
+        <div className="flex gap-2">
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="">All Categories</option>
+            {categories.map(cat => (
+              <option key={cat.id} value={cat.name}>{cat.name}</option>
+            ))}
+          </select>
+          
+          <input
+            type="text"
+            value={selectedTags}
+            onChange={(e) => setSelectedTags(e.target.value)}
+            placeholder="Filter by tags..."
+            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          />
+          
+          <button
+            onClick={handleFilter}
+            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+          >
+            Filter
+          </button>
+          
+          <button
+            onClick={() => {
+              setSearchTerm('');
+              setSelectedCategory('');
+              setSelectedTags('');
+              onSearch('');
+              onFilter({});
+            }}
+            className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
+          >
+            Clear
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ReadingStats = ({ stats }) => {
+  if (!stats) return null;
+
+  const completionRate = stats.total_books > 0 ? (stats.books_completed / stats.total_books * 100).toFixed(1) : 0;
+  const avgReadingTime = stats.total_books > 0 ? Math.round(stats.total_reading_time / stats.total_books) : 0;
+
+  return (
+    <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+      <h3 className="text-lg font-semibold mb-4">Reading Statistics</h3>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="text-center">
+          <div className="text-2xl font-bold text-blue-600">{stats.total_books}</div>
+          <div className="text-sm text-gray-600">Total Books</div>
+        </div>
+        <div className="text-center">
+          <div className="text-2xl font-bold text-green-600">{stats.books_completed}</div>
+          <div className="text-sm text-gray-600">Completed</div>
+        </div>
+        <div className="text-center">
+          <div className="text-2xl font-bold text-purple-600">{Math.round(stats.total_reading_time / 60)}h</div>
+          <div className="text-sm text-gray-600">Reading Time</div>
+        </div>
+        <div className="text-center">
+          <div className="text-2xl font-bold text-orange-600">{stats.books_this_month}</div>
+          <div className="text-sm text-gray-600">This Month</div>
+        </div>
+      </div>
+      <div className="mt-4 flex justify-between text-sm text-gray-600">
+        <span>Completion Rate: {completionRate}%</span>
+        {stats.favorite_category && (
+          <span>Favorite Category: {stats.favorite_category}</span>
+        )}
+      </div>
+    </div>
+  );
+};
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [pdfUrl, setPdfUrl] = useState(null);
