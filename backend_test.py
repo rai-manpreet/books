@@ -31,6 +31,8 @@ class BookManagementTester:
         self.test_user_token = None
         self.test_user2_token = None
         self.test_book_id = None
+        self.test_book_id2 = None  # For additional testing
+        self.test_category_id = None
         self.results = {
             "auth_tests": [],
             "book_upload_tests": [],
