@@ -281,11 +281,28 @@ async def upload_book(
     
     # Update category book count
     if category:
-        await db.categories.update_one(
-            {"name": category, "user_id": current_user["id"]},
-            {"$inc": {"book_count": 1}},
-            upsert=True
-        )
+        # Check if category exists, if not create it with proper fields
+        existing_category = await db.categories.find_one({
+            "name": category, 
+            "user_id": current_user["id"]
+        })
+        
+        if existing_category:
+            # Category exists, just increment count
+            await db.categories.update_one(
+                {"name": category, "user_id": current_user["id"]},
+                {"$inc": {"book_count": 1}}
+            )
+        else:
+            # Category doesn't exist, create it with all required fields
+            new_category = {
+                "id": str(uuid.uuid4()),
+                "name": category,
+                "color": "#3B82F6",  # Default blue color
+                "user_id": current_user["id"],
+                "book_count": 1
+            }
+            await db.categories.insert_one(new_category)
     
     return BookResponse(**book_data)
 
