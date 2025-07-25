@@ -75,6 +75,11 @@ class Book(BaseModel):
     file_size: int
     upload_date: datetime
     reading_progress: float = 0.0
+    category: Optional[str] = None
+    tags: List[str] = []
+    reading_time: int = 0  # in minutes
+    bookmarks: List[int] = []  # page numbers
+    cover_image: Optional[str] = None  # base64 encoded image
 
 class BookResponse(BaseModel):
     id: str
@@ -85,6 +90,26 @@ class BookResponse(BaseModel):
     file_size: int
     upload_date: datetime
     reading_progress: float = 0.0
+    category: Optional[str] = None
+    tags: List[str] = []
+    reading_time: int = 0
+    bookmarks: List[int] = []
+    cover_image: Optional[str] = None
+
+class Category(BaseModel):
+    id: str
+    name: str
+    color: str
+    user_id: str
+    book_count: int = 0
+
+class ReadingStats(BaseModel):
+    total_books: int
+    books_completed: int
+    total_reading_time: int
+    current_streak: int
+    books_this_month: int
+    favorite_category: Optional[str] = None
 
 class ReadingProgressUpdate(BaseModel):
     book_id: str
