@@ -121,8 +121,10 @@ startxref
         print("\n=== Testing User Registration ===")
         
         # Test valid registration
+        import time
+        timestamp = str(int(time.time()))
         user_data = {
-            "email": "alice.reader@bookstore.com",
+            "email": f"alice.reader.{timestamp}@bookstore.com",
             "password": "SecurePass123!",
             "name": "Alice Reader"
         }
