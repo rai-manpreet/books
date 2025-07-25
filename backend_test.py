@@ -584,6 +584,387 @@ startxref
             self.log_test("user_isolation_tests", "Book List Isolation", False, 
                         f"Request failed: {str(e)}")
     
+    def test_search_functionality(self):
+        """Test search functionality by title, author, filename"""
+        print("\n=== Testing Search Functionality ===")
+        
+        if not self.test_user_token:
+            self.log_test("search_tests", "Search Functionality", False, 
+                        "No valid user token available for testing")
+            return
+        
+        headers = {"Authorization": f"Bearer {self.test_user_token}"}
+        
+        # Test search by title
+        try:
+            response = self.session.get(f"{self.base_url}/books?search=Programming", headers=headers)
+            if response.status_code == 200:
+                books = response.json()
+                if isinstance(books, list) and len(books) > 0:
+                    found_book = any("Programming" in book.get("title", "") for book in books)
+                    if found_book:
+                        self.log_test("search_tests", "Search by Title", True, 
+                                    f"Found {len(books)} books matching title search")
+                    else:
+                        self.log_test("search_tests", "Search by Title", False, 
+                                    "Search returned books but none match title")
+                else:
+                    self.log_test("search_tests", "Search by Title", False, 
+                                "Search returned empty results")
+            else:
+                self.log_test("search_tests", "Search by Title", False, 
+                            f"Search failed with status {response.status_code}")
+        except Exception as e:
+            self.log_test("search_tests", "Search by Title", False, 
+                        f"Search request failed: {str(e)}")
+        
+        # Test search by author
+        try:
+            response = self.session.get(f"{self.base_url}/books?search=Jane", headers=headers)
+            if response.status_code == 200:
+                books = response.json()
+                if isinstance(books, list) and len(books) > 0:
+                    found_book = any("Jane" in book.get("author", "") for book in books)
+                    if found_book:
+                        self.log_test("search_tests", "Search by Author", True, 
+                                    f"Found {len(books)} books matching author search")
+                    else:
+                        self.log_test("search_tests", "Search by Author", False, 
+                                    "Search returned books but none match author")
+                else:
+                    self.log_test("search_tests", "Search by Author", False, 
+                                "Author search returned empty results")
+            else:
+                self.log_test("search_tests", "Search by Author", False, 
+                            f"Author search failed with status {response.status_code}")
+        except Exception as e:
+            self.log_test("search_tests", "Search by Author", False, 
+                        f"Author search request failed: {str(e)}")
+        
+        # Test case-insensitive search
+        try:
+            response = self.session.get(f"{self.base_url}/books?search=programming", headers=headers)
+            if response.status_code == 200:
+                books = response.json()
+                if isinstance(books, list) and len(books) > 0:
+                    self.log_test("search_tests", "Case Insensitive Search", True, 
+                                f"Case-insensitive search found {len(books)} books")
+                else:
+                    self.log_test("search_tests", "Case Insensitive Search", False, 
+                                "Case-insensitive search returned empty results")
+            else:
+                self.log_test("search_tests", "Case Insensitive Search", False, 
+                            f"Case-insensitive search failed with status {response.status_code}")
+        except Exception as e:
+            self.log_test("search_tests", "Case Insensitive Search", False, 
+                        f"Case-insensitive search request failed: {str(e)}")
+        
+        # Test filter by category
+        try:
+            response = self.session.get(f"{self.base_url}/books?category=Programming", headers=headers)
+            if response.status_code == 200:
+                books = response.json()
+                if isinstance(books, list):
+                    category_match = all(book.get("category") == "Programming" for book in books)
+                    if category_match:
+                        self.log_test("search_tests", "Filter by Category", True, 
+                                    f"Category filter returned {len(books)} matching books")
+                    else:
+                        self.log_test("search_tests", "Filter by Category", False, 
+                                    "Category filter returned non-matching books")
+                else:
+                    self.log_test("search_tests", "Filter by Category", False, 
+                                "Category filter response is not a list")
+            else:
+                self.log_test("search_tests", "Filter by Category", False, 
+                            f"Category filter failed with status {response.status_code}")
+        except Exception as e:
+            self.log_test("search_tests", "Filter by Category", False, 
+                        f"Category filter request failed: {str(e)}")
+        
+        # Test filter by tags
+        try:
+            response = self.session.get(f"{self.base_url}/books?tags=python", headers=headers)
+            if response.status_code == 200:
+                books = response.json()
+                if isinstance(books, list):
+                    tag_match = all("python" in book.get("tags", []) for book in books if book.get("tags"))
+                    if len(books) > 0 and tag_match:
+                        self.log_test("search_tests", "Filter by Tags", True, 
+                                    f"Tag filter returned {len(books)} matching books")
+                    elif len(books) == 0:
+                        self.log_test("search_tests", "Filter by Tags", True, 
+                                    "Tag filter returned no books (acceptable if no matches)")
+                    else:
+                        self.log_test("search_tests", "Filter by Tags", False, 
+                                    "Tag filter returned non-matching books")
+                else:
+                    self.log_test("search_tests", "Filter by Tags", False, 
+                                "Tag filter response is not a list")
+            else:
+                self.log_test("search_tests", "Filter by Tags", False, 
+                            f"Tag filter failed with status {response.status_code}")
+        except Exception as e:
+            self.log_test("search_tests", "Filter by Tags", False, 
+                        f"Tag filter request failed: {str(e)}")
+    
+    def test_categories_system(self):
+        """Test categories CRUD operations"""
+        print("\n=== Testing Categories System ===")
+        
+        if not self.test_user_token:
+            self.log_test("category_tests", "Categories System", False, 
+                        "No valid user token available for testing")
+            return
+        
+        headers = {"Authorization": f"Bearer {self.test_user_token}"}
+        
+        # Test create category
+        try:
+            category_data = {
+                "name": "Science Fiction",
+                "color": "#FF6B6B"
+            }
+            response = self.session.post(f"{self.base_url}/categories", 
+                                       json=category_data, headers=headers)
+            if response.status_code == 200:
+                category = response.json()
+                if "id" in category and category.get("name") == "Science Fiction":
+                    self.test_category_id = category["id"]
+                    self.log_test("category_tests", "Create Category", True, 
+                                "Category created successfully")
+                else:
+                    self.log_test("category_tests", "Create Category", False, 
+                                "Category response missing required fields")
+            else:
+                self.log_test("category_tests", "Create Category", False, 
+                            f"Category creation failed with status {response.status_code}")
+        except Exception as e:
+            self.log_test("category_tests", "Create Category", False, 
+                        f"Category creation request failed: {str(e)}")
+        
+        # Test get all categories
+        try:
+            response = self.session.get(f"{self.base_url}/categories", headers=headers)
+            if response.status_code == 200:
+                categories = response.json()
+                if isinstance(categories, list):
+                    self.log_test("category_tests", "Get Categories", True, 
+                                f"Retrieved {len(categories)} categories")
+                else:
+                    self.log_test("category_tests", "Get Categories", False, 
+                                "Categories response is not a list")
+            else:
+                self.log_test("category_tests", "Get Categories", False, 
+                            f"Get categories failed with status {response.status_code}")
+        except Exception as e:
+            self.log_test("category_tests", "Get Categories", False, 
+                        f"Get categories request failed: {str(e)}")
+        
+        # Test duplicate category creation
+        try:
+            duplicate_data = {
+                "name": "Science Fiction",
+                "color": "#00FF00"
+            }
+            response = self.session.post(f"{self.base_url}/categories", 
+                                       json=duplicate_data, headers=headers)
+            if response.status_code == 400:
+                self.log_test("category_tests", "Duplicate Category Prevention", True, 
+                            "Correctly prevented duplicate category creation")
+            else:
+                self.log_test("category_tests", "Duplicate Category Prevention", False, 
+                            f"Should prevent duplicate category, got status {response.status_code}")
+        except Exception as e:
+            self.log_test("category_tests", "Duplicate Category Prevention", False, 
+                        f"Duplicate category test failed: {str(e)}")
+    
+    def test_bookmarks_system(self):
+        """Test bookmark toggle functionality"""
+        print("\n=== Testing Bookmarks System ===")
+        
+        if not self.test_user_token or not self.test_book_id:
+            self.log_test("bookmark_tests", "Bookmarks System", False, 
+                        "No valid user token or book ID available for testing")
+            return
+        
+        headers = {"Authorization": f"Bearer {self.test_user_token}"}
+        
+        # Test add bookmark
+        try:
+            bookmark_data = {
+                "book_id": self.test_book_id,
+                "page_number": 25
+            }
+            response = self.session.post(f"{self.base_url}/books/{self.test_book_id}/bookmark", 
+                                       json=bookmark_data, headers=headers)
+            if response.status_code == 200:
+                result = response.json()
+                if "bookmarks" in result and 25 in result["bookmarks"]:
+                    self.log_test("bookmark_tests", "Add Bookmark", True, 
+                                "Bookmark added successfully")
+                else:
+                    self.log_test("bookmark_tests", "Add Bookmark", False, 
+                                "Bookmark not found in response")
+            else:
+                self.log_test("bookmark_tests", "Add Bookmark", False, 
+                            f"Add bookmark failed with status {response.status_code}")
+        except Exception as e:
+            self.log_test("bookmark_tests", "Add Bookmark", False, 
+                        f"Add bookmark request failed: {str(e)}")
+        
+        # Test bookmark persistence
+        try:
+            response = self.session.get(f"{self.base_url}/books/{self.test_book_id}", headers=headers)
+            if response.status_code == 200:
+                book = response.json()
+                if "bookmarks" in book and 25 in book["bookmarks"]:
+                    self.log_test("bookmark_tests", "Bookmark Persistence", True, 
+                                "Bookmark persisted correctly")
+                else:
+                    self.log_test("bookmark_tests", "Bookmark Persistence", False, 
+                                "Bookmark not persisted")
+            else:
+                self.log_test("bookmark_tests", "Bookmark Persistence", False, 
+                            f"Failed to retrieve book for bookmark check")
+        except Exception as e:
+            self.log_test("bookmark_tests", "Bookmark Persistence", False, 
+                        f"Bookmark persistence check failed: {str(e)}")
+        
+        # Test remove bookmark (toggle)
+        try:
+            bookmark_data = {
+                "book_id": self.test_book_id,
+                "page_number": 25
+            }
+            response = self.session.post(f"{self.base_url}/books/{self.test_book_id}/bookmark", 
+                                       json=bookmark_data, headers=headers)
+            if response.status_code == 200:
+                result = response.json()
+                if "bookmarks" in result and 25 not in result["bookmarks"]:
+                    self.log_test("bookmark_tests", "Remove Bookmark", True, 
+                                "Bookmark removed successfully (toggle)")
+                else:
+                    self.log_test("bookmark_tests", "Remove Bookmark", False, 
+                                "Bookmark not removed on toggle")
+            else:
+                self.log_test("bookmark_tests", "Remove Bookmark", False, 
+                            f"Remove bookmark failed with status {response.status_code}")
+        except Exception as e:
+            self.log_test("bookmark_tests", "Remove Bookmark", False, 
+                        f"Remove bookmark request failed: {str(e)}")
+    
+    def test_reading_statistics(self):
+        """Test reading statistics endpoint"""
+        print("\n=== Testing Reading Statistics ===")
+        
+        if not self.test_user_token:
+            self.log_test("stats_tests", "Reading Statistics", False, 
+                        "No valid user token available for testing")
+            return
+        
+        headers = {"Authorization": f"Bearer {self.test_user_token}"}
+        
+        # Test get reading statistics
+        try:
+            response = self.session.get(f"{self.base_url}/stats", headers=headers)
+            if response.status_code == 200:
+                stats = response.json()
+                required_fields = ["total_books", "books_completed", "total_reading_time", 
+                                 "current_streak", "books_this_month"]
+                
+                if all(field in stats for field in required_fields):
+                    self.log_test("stats_tests", "Get Reading Stats", True, 
+                                f"Statistics retrieved: {stats['total_books']} total books, "
+                                f"{stats['books_completed']} completed")
+                else:
+                    missing_fields = [f for f in required_fields if f not in stats]
+                    self.log_test("stats_tests", "Get Reading Stats", False, 
+                                f"Missing required fields: {missing_fields}")
+            else:
+                self.log_test("stats_tests", "Get Reading Stats", False, 
+                            f"Get stats failed with status {response.status_code}")
+        except Exception as e:
+            self.log_test("stats_tests", "Get Reading Stats", False, 
+                        f"Get stats request failed: {str(e)}")
+        
+        # Test stats calculation accuracy
+        try:
+            # First get current stats
+            response = self.session.get(f"{self.base_url}/stats", headers=headers)
+            if response.status_code == 200:
+                stats = response.json()
+                
+                # Get books count for verification
+                books_response = self.session.get(f"{self.base_url}/books", headers=headers)
+                if books_response.status_code == 200:
+                    books = books_response.json()
+                    actual_book_count = len(books)
+                    
+                    if stats["total_books"] == actual_book_count:
+                        self.log_test("stats_tests", "Stats Calculation Accuracy", True, 
+                                    f"Book count matches: {actual_book_count}")
+                    else:
+                        self.log_test("stats_tests", "Stats Calculation Accuracy", False, 
+                                    f"Book count mismatch: stats={stats['total_books']}, actual={actual_book_count}")
+                else:
+                    self.log_test("stats_tests", "Stats Calculation Accuracy", False, 
+                                "Could not retrieve books for verification")
+            else:
+                self.log_test("stats_tests", "Stats Calculation Accuracy", False, 
+                            "Could not retrieve stats for accuracy check")
+        except Exception as e:
+            self.log_test("stats_tests", "Stats Calculation Accuracy", False, 
+                        f"Stats accuracy check failed: {str(e)}")
+
+    def test_enhanced_progress_tracking(self):
+        """Test enhanced reading progress with reading time"""
+        print("\n=== Testing Enhanced Progress Tracking ===")
+        
+        if not self.test_user_token or not self.test_book_id:
+            self.log_test("progress_tracking_tests", "Enhanced Progress Tracking", False, 
+                        "No valid user token or book ID available for testing")
+            return
+        
+        headers = {"Authorization": f"Bearer {self.test_user_token}"}
+        
+        # Test update reading progress with reading time
+        progress_data = {
+            "book_id": self.test_book_id,
+            "progress": 0.65,
+            "reading_time": 30,  # 30 minutes
+            "current_page": 45
+        }
+        
+        try:
+            response = self.session.put(f"{self.base_url}/books/{self.test_book_id}/progress", 
+                                      json=progress_data, headers=headers)
+            if response.status_code == 200:
+                self.log_test("progress_tracking_tests", "Enhanced Progress Update", True, 
+                            "Reading progress with time updated successfully")
+                
+                # Verify the reading time was added
+                book_response = self.session.get(f"{self.base_url}/books/{self.test_book_id}", 
+                                               headers=headers)
+                if book_response.status_code == 200:
+                    book = book_response.json()
+                    if (abs(book.get("reading_progress", 0) - 0.65) < 0.01 and 
+                        book.get("reading_time", 0) >= 30):
+                        self.log_test("progress_tracking_tests", "Reading Time Tracking", True, 
+                                    f"Reading time tracked: {book.get('reading_time', 0)} minutes")
+                    else:
+                        self.log_test("progress_tracking_tests", "Reading Time Tracking", False, 
+                                    f"Reading time not tracked correctly: {book.get('reading_time', 0)}")
+                else:
+                    self.log_test("progress_tracking_tests", "Reading Time Tracking", False, 
+                                "Could not retrieve book to verify reading time")
+            else:
+                self.log_test("progress_tracking_tests", "Enhanced Progress Update", False, 
+                            f"Enhanced progress update failed with status {response.status_code}")
+        except Exception as e:
+            self.log_test("progress_tracking_tests", "Enhanced Progress Update", False, 
+                        f"Enhanced progress update request failed: {str(e)}")
+
     def test_book_deletion(self):
         """Test book deletion functionality"""
         print("\n=== Testing Book Deletion ===")
