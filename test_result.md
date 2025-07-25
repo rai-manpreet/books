@@ -164,6 +164,54 @@ backend:
       - working: true
         agent: "testing"
         comment: "Reading progress tracking working flawlessly. Progress updates (✅), progress persistence (✅), progress retrieval (✅). Tested with 35% progress value and verified correct storage and retrieval. All endpoints properly secured and functional."
+        
+  - task: "Search Functionality"
+    implemented: true
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added search by title, author, filename with regex support and case-insensitive matching"
+        
+  - task: "Categories System"
+    implemented: true
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added categories CRUD with book count tracking, filtering, and automatic cleanup"
+        
+  - task: "Bookmarks System"
+    implemented: true
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added bookmark toggle functionality for page tracking and quick navigation"
+        
+  - task: "Reading Statistics"
+    implemented: true
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added comprehensive reading stats endpoint with completion tracking, reading time, and favorite categories"
 
 frontend:
   - task: "Authentication UI"
