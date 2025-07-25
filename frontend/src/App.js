@@ -366,7 +366,7 @@ const FileUpload = ({ onUpload }) => {
   );
 };
 
-const BookCard = ({ book, onRead, onDelete }) => {
+const BookCard = ({ book, onRead, onDelete, onBookmark }) => {
   const formatFileSize = (bytes) => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -375,38 +375,75 @@ const BookCard = ({ book, onRead, onDelete }) => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  const formatReadingTime = (minutes) => {
+    if (minutes === 0) return '0 min';
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow">
       <div className="flex justify-between items-start mb-2">
         <h3 className="text-lg font-semibold truncate">{book.title}</h3>
-        <button
-          onClick={() => onDelete(book.id)}
-          className="text-red-600 hover:text-red-800 text-sm"
-        >
-          ×
-        </button>
+        <div className="flex space-x-2">
+          <button
+            onClick={() => onBookmark(book.id, 1)}
+            className="text-yellow-500 hover:text-yellow-600 text-sm"
+            title="Bookmark"
+          >
+            ★
+          </button>
+          <button
+            onClick={() => onDelete(book.id)}
+            className="text-red-600 hover:text-red-800 text-sm"
+            title="Delete"
+          >
+            ×
+          </button>
+        </div>
       </div>
       
       {book.author && (
         <p className="text-gray-600 text-sm mb-2">by {book.author}</p>
       )}
       
+      {book.category && (
+        <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full mb-2">
+          {book.category}
+        </span>
+      )}
+      
+      {book.tags && book.tags.length > 0 && (
+        <div className="flex flex-wrap gap-1 mb-2">
+          {book.tags.map((tag, index) => (
+            <span key={index} className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
+      
       <div className="text-xs text-gray-500 mb-3">
         <p>Format: {book.file_type === 'application/pdf' ? 'PDF' : 'EPUB'}</p>
         <p>Size: {formatFileSize(book.file_size)}</p>
         <p>Progress: {Math.round(book.reading_progress * 100)}%</p>
+        <p>Reading Time: {formatReadingTime(book.reading_time || 0)}</p>
+        {book.bookmarks && book.bookmarks.length > 0 && (
+          <p>Bookmarks: {book.bookmarks.length}</p>
+        )}
       </div>
       
       <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
         <div 
-          className="bg-blue-600 h-2 rounded-full" 
+          className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
           style={{ width: `${book.reading_progress * 100}%` }}
         ></div>
       </div>
       
       <button
         onClick={() => onRead(book)}
-        className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+        className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors"
       >
         {book.reading_progress > 0 ? 'Continue Reading' : 'Start Reading'}
       </button>
