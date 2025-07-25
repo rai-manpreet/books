@@ -213,8 +213,24 @@ const FileUpload = ({ onUpload }) => {
   const [file, setFile] = useState(null);
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
+  const [category, setCategory] = useState('');
+  const [tags, setTags] = useState('');
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get(`${API}/categories`);
+      setCategories(response.data);
+    } catch (error) {
+      console.error('Failed to fetch categories:', error);
+    }
+  };
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -240,6 +256,8 @@ const FileUpload = ({ onUpload }) => {
     formData.append('file', file);
     formData.append('title', title);
     if (author) formData.append('author', author);
+    if (category) formData.append('category', category);
+    if (tags) formData.append('tags', tags);
 
     try {
       const response = await axios.post(`${API}/books/upload`, formData, {
@@ -252,6 +270,8 @@ const FileUpload = ({ onUpload }) => {
       setFile(null);
       setTitle('');
       setAuthor('');
+      setCategory('');
+      setTags('');
       setError('');
     } catch (error) {
       setError(error.response?.data?.detail || 'Upload failed');
@@ -297,6 +317,35 @@ const FileUpload = ({ onUpload }) => {
             type="text"
             value={author}
             onChange={(e) => setAuthor(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Category (optional)
+          </label>
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="">Select a category</option>
+            {categories.map(cat => (
+              <option key={cat.id} value={cat.name}>{cat.name}</option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Tags (optional, comma-separated)
+          </label>
+          <input
+            type="text"
+            value={tags}
+            onChange={(e) => setTags(e.target.value)}
+            placeholder="fiction, mystery, thriller"
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
