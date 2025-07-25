@@ -779,6 +779,21 @@ startxref
             self.log_test("category_tests", "Duplicate Category Prevention", False, 
                         f"Duplicate category test failed: {str(e)}")
     
+        # Test delete category
+        if self.test_category_id:
+            try:
+                response = self.session.delete(f"{self.base_url}/categories/{self.test_category_id}", 
+                                             headers=headers)
+                if response.status_code == 200:
+                    self.log_test("category_tests", "Delete Category", True, 
+                                "Category deleted successfully")
+                else:
+                    self.log_test("category_tests", "Delete Category", False, 
+                                f"Category deletion failed with status {response.status_code}")
+            except Exception as e:
+                self.log_test("category_tests", "Delete Category", False, 
+                            f"Category deletion request failed: {str(e)}")
+    
     def test_bookmarks_system(self):
         """Test bookmark toggle functionality"""
         print("\n=== Testing Bookmarks System ===")
