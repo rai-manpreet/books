@@ -114,6 +114,22 @@ class ReadingStats(BaseModel):
 class ReadingProgressUpdate(BaseModel):
     book_id: str
     progress: float
+    reading_time: Optional[int] = None  # additional minutes read
+    current_page: Optional[int] = None
+
+class BookmarkToggle(BaseModel):
+    book_id: str
+    page_number: int
+
+class BookUpdate(BaseModel):
+    title: Optional[str] = None
+    author: Optional[str] = None
+    category: Optional[str] = None
+    tags: Optional[List[str]] = None
+
+class CategoryCreate(BaseModel):
+    name: str
+    color: str = "#3B82F6"
 
 # Authentication helper functions
 def verify_password(plain_password, hashed_password):
