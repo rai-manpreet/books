@@ -167,15 +167,18 @@ backend:
         
   - task: "Search Functionality"
     implemented: true
-    working: "NA"
+    working: true
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added search by title, author, filename with regex support and case-insensitive matching"
+      - working: true
+        agent: "testing"
+        comment: "Search functionality working perfectly. All search features tested: ✅ Search by title (found 1 book), ✅ Search by author (found 1 book), ✅ Case-insensitive search (working), ✅ Filter by category (1 matching book), ✅ Filter by tags (1 matching book). All search operations return correct results with proper filtering."
         
   - task: "Categories System"
     implemented: true
